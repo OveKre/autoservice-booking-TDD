@@ -1,114 +1,114 @@
 # AutoService Booking TDD
 
-Testjuhitud arenduse harjutusprojekt autoremondi broneeringusüsteemi tuumfunktsionaalsustega.
+A Test-Driven Development (TDD) learning project demonstrating core functionality of an auto repair booking system.
 
+**NOTE:** This is an educational project for demonstrating TDD methodology. Features are selected from the auto repair domain.
 
+## Technology Stack
 
-## Tehnoloogia Stack
-
-- **Keel:** Python 3.11+
+- **Language:** Python 3.11+
 - **ORM:** SQLAlchemy 2.0
 - **Test Framework:** pytest + pytest-cov
 - **Mock Library:** unittest.mock
-- **Andmebaas:** SQLite (dev) / PostgreSQL (production)
-- **Migratsioonid:** Alembic
+- **Database:** SQLite (dev) / PostgreSQL (production)
+- **Migrations:** Alembic
 - **Dependency Management:** pip + requirements.txt
 
-## Eeltingimused
+## Prerequisites
 
-- Python 3.11 või uuem
+- Python 3.11 or newer
 - pip (Python package manager)
 - Git
-- SQLite (tuleb Pythoniga kaasa)
+- SQLite (comes with Python)
 
-## Projekti Seadistamine
+## Project Setup
 
-### 1. Klooni Repositoorium
+### 1. Clone Repository
 
 ```bash
-git clone https://github.com/sinu-kasutaja/autoservice-booking-tdd.git
-cd autoservice-booking-tdd
+git clone https://github.com/OveKre/autoservice-booking-TDD.git
+cd autoservice-booking-TDD
 ```
 
-### 2. Virtuaalne Keskkond
+### 2. Virtual Environment
 
 ```bash
-# Loo virtuaalne keskkond
+# Create virtual environment
 python -m venv venv
 
-# Aktiveeri (Linux/Mac)
+# Activate (Linux/Mac)
 source venv/bin/activate
 
-# Aktiveeri (Windows)
+# Activate (Windows)
 venv\Scripts\activate
 ```
 
-### 3. Installeeri Sõltuvused
+### 3. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-### 4. Keskkonna Konfiguratsioon
+### 4. Environment Configuration
 
 ```bash
-# Kopeeri näidisfail
+# Copy example file
 cp .env.example .env
 
-# Muuda .env failis väärtused vajaduse järgi
+# Edit .env file with your values if needed
 # DATABASE_URL=sqlite:///./autoservice.db
 ```
 
-### 5. Andmebaasi Migratsioonid
+### 5. Database Migrations
 
 ```bash
-# Käivita migratsioonid
+# Run migrations
 alembic upgrade head
 
-# Kontrolli staatust
+# Check status
 alembic current
 ```
 
-## Testide Käivitamine
+## Running Tests
 
-### Kõik Testid
+### All Tests
 
 ```bash
-# Käivita kõik testid
+# Run all tests
 pytest
 
-# Verbose režiim
+# Verbose mode
 pytest -v
 
-# Peata esimese vea juures
+# Stop at first failure
 pytest -x
 ```
 
-### Katvuse Raport
+### Coverage Report
 
 ```bash
-# Käivita testid katvusega
+# Run tests with coverage
 pytest --cov=src --cov-report=html --cov-report=term
 
-# Vaata HTML raportit
-# Ava: htmlcov/index.html
+# View HTML report
+# Open: htmlcov/index.html
 ```
 
-### Üksikud Testifailid
+### Individual Test Files
 
 ```bash
-# Ainult broneeringu valideerimise testid
+# Only booking validation tests
 pytest tests/unit/test_booking_validation.py
 
-# Ainult varuosa testid
+# Only spare part tests
 pytest tests/unit/test_spare_part_availability.py
 
-# Ainult broneeringu tühistamise testid
+# Only booking cancellation tests
 pytest tests/unit/test_booking_cancellation.py
 ```
 
-## Projekti Struktuur
+## Project Structure
 
 ```
 autoservice-booking-tdd/
@@ -117,16 +117,16 @@ autoservice-booking-tdd/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── base.py              # SQLAlchemy Base
-│   │   ├── booking.py           # Broneeringu mudel
-│   │   └── spare_part.py        # Varuosa mudel
+│   │   ├── booking.py           # Booking model
+│   │   └── spare_part.py        # Spare part model
 │   ├── services/
 │   │   ├── __init__.py
-│   │   ├── booking_service.py   # Broneeringu äriloogika
-│   │   └── spare_part_service.py # Varuosa äriloogika
+│   │   ├── booking_service.py   # Booking business logic
+│   │   └── spare_part_service.py # Spare part business logic
 │   ├── utils/
 │   │   ├── __init__.py
-│   │   └── datetime_provider.py # Aja mock'imiseks
-│   └── database.py              # DB session haldus
+│   │   └── datetime_provider.py # Time mocking utility
+│   └── database.py              # DB session management
 ├── tests/
 │   ├── __init__.py
 │   ├── conftest.py              # Pytest fixtures
@@ -146,360 +146,184 @@ autoservice-booking-tdd/
 ├── requirements-dev.txt
 └── README.md
 ```
+## Features
 
-## Funktsionaalsused
+### 1. Booking Time Validation
 
-### 1. Broneeringu Aja Valideerimine
+**Domain Rule:** Booking time must be within working hours (Mon-Fri 8:00-17:00) and at least 24 hours in the future.
 
-**Domeenireegel:** Broneeringu aeg peab olema tööajal (E-R 8:00-17:00) ja vähemalt 24 tundi tulevikus.
+**Tests:** 11 tests covering all validation rules
 
-**Testid:**
-- ✅ `test_should_allow_booking_tomorrow_at_10am` - lubab broneerida homme kell 10:00
-- ✅ `test_should_not_allow_booking_today` - ei luba broneerida täna
-- ✅ `test_should_not_allow_booking_on_weekend` - ei luba broneerida nädalavahetusel
-- ✅ `test_should_not_allow_booking_outside_working_hours` - ei luba broneerida väljaspool tööaega
+**Model:** `Booking` (id, customer_email, service_type, booking_datetime, status, created_at)
 
-**Mudel:** `Booking` (id, customer_email, service_type, booking_datetime, status, created_at)
+**Test File:** `tests/unit/test_booking_validation.py`
 
-**Testifail:** `tests/unit/test_booking_validation.py`
+**Implementation:** `src/services/booking_service.py` - `validate_booking_time()` method
 
-**Implementatsioon:** `src/services/booking_service.py` - `validate_booking_time()` meetod
+### 2. Spare Part Availability Check
 
----
+**Domain Rule:** Spare part is 'available' only if quantity > 0 AND price is defined (not NULL).
 
-### 2. Varuosa Saadavuse Kontroll
+**Tests:** 8 tests covering all availability scenarios
 
-**Domeenireegel:** Varuosa on 'saadaval' ainult kui laos kogus > 0 JA hind on määratud (ei ole NULL).
+**Model:** `SparePart` (id, name, part_number, quantity, price, created_at)
 
-**Testid:**
-- ✅ `test_should_return_available_when_in_stock_and_priced` - tagastab 'saadaval'
-- ✅ `test_should_return_out_of_stock_when_quantity_zero` - tagastab 'otsas' kui laos=0
-- ✅ `test_should_return_price_undefined_when_price_null` - tagastab 'määramata' kui hind puudub
-- ✅ `test_should_return_out_of_stock_when_negative_quantity` - ei luba negatiivset kogust
+**Test File:** `tests/unit/test_spare_part_availability.py`
 
-**Mudel:** `SparePart` (id, name, part_number, quantity, price, created_at)
+**Implementation:** `src/services/spare_part_service.py` - `check_availability()` method
 
-**Testifail:** `tests/unit/test_spare_part_availability.py`
+### 3. Booking Cancellation
 
-**Implementatsioon:** `src/services/spare_part_service.py` - `check_availability()` meetod
+**Domain Rule:** Booking can be cancelled only if more than 2 hours before booking start time and status is 'CONFIRMED'.
 
----
+**Tests:** 8 tests covering all cancellation scenarios
 
-### 3. Broneeringu Tühistamine
+**Model:** `Booking` (status: PENDING, CONFIRMED, CANCELLED, COMPLETED)
 
-**Domeenireegel:** Broneeringu saab tühistada ainult:
-- Rohkem kui 2 tundi enne broneeringu algust
-- Kui broneering on staatuses 'CONFIRMED'
+**Test File:** `tests/unit/test_booking_cancellation.py`
 
-**Testid:**
-- ✅ `test_should_allow_cancellation_3_hours_before` - lubab tühistada 3h enne
-- ✅ `test_should_not_allow_cancellation_1_hour_before` - ei luba tühistada 1h enne
-- ✅ `test_should_not_allow_cancellation_of_cancelled_booking` - ei luba tühistada juba tühistatud
-- ✅ `test_should_not_allow_cancellation_of_completed_booking` - ei luba tühistada lõpetatud broneeringut
+**Implementation:** `src/services/booking_service.py` - `cancel_booking()` method
 
-**Mudel:** `Booking` (status: PENDING, CONFIRMED, CANCELLED, COMPLETED)
+## Test Results
 
-**Testifail:** `tests/unit/test_booking_cancellation.py`
-
-**Implementatsioon:** `src/services/booking_service.py` - `cancel_booking()` meetod
-
----
-
-## ORM Parimad Praktikad
-
-### Rakendatud Praktikad
-
-1. **Korrektsed Seosed**
-   - Foreign Key piirangud
-   - Cascade valikud läbimõeldud
-   - Index'id jõudlusele
-
-2. **Andmebaasi Piirangud**
-   ```python
-   # Näide: Booking mudel
-   customer_email = Column(String(255), nullable=False)
-   booking_datetime = Column(DateTime, nullable=False)
-   status = Column(Enum(BookingStatus), nullable=False, default=BookingStatus.PENDING)
-   
-   __table_args__ = (
-       CheckConstraint('booking_datetime > created_at'),
-       Index('idx_booking_datetime', 'booking_datetime'),
-   )
-   ```
-
-3. **Migratsioonid**
-   - Iga skeemi muudatus = eraldi migratsioon
-   - Up ja Down operatsioonid
-   - Käivitatavad nullist
-
-4. **Transaktsioonid**
-   ```python
-   # Näide: Atomic operatsioon
-   with session.begin():
-       booking.status = BookingStatus.CONFIRMED
-       spare_part.quantity -= 1
-       session.commit()
-   ```
-
-### Migratsiooni Käsud
-
-```bash
-# Loo uus migratsioon
-alembic revision --autogenerate -m "kirjeldus"
-
-# Käivita migratsioonid
-alembic upgrade head
-
-# Tagasi võtmine
-alembic downgrade -1
-
-# Ajalugu
-alembic history
+```
+✅ Booking Validation Tests: 11/11 PASSED
+✅ Spare Part Availability Tests: 8/8 PASSED
+✅ Booking Cancellation Tests: 8/8 PASSED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ TOTAL: 27/27 PASSED (100%)
 ```
 
-## Mock'imise Strateegia
+## Code Coverage
 
-### Mockitakse
-
-✅ **Datetime Provider** - kõik kellaaja päringud
-```python
-from unittest.mock import patch
-
-@patch('src.utils.datetime_provider.DatetimeProvider.now')
-def test_something(mock_now):
-    mock_now.return_value = datetime(2025, 1, 15, 10, 0)
-    # Test code...
+```
+Overall Coverage: 76%
+- Models: 95-100% coverage
+- Services: 59-71% coverage
+- Utils: 80% coverage
 ```
 
-✅ **Email Teenus** - broneeringu kinnitused
-```python
-@patch('src.services.email_service.EmailService.send')
-def test_booking_confirmation(mock_email):
-    mock_email.return_value = True
-    # Test code...
-```
+## Git Workflow (TDD Red-Green-Refactor)
 
-✅ **UUID Generaator** - determineeritud ID-d
-```python
-@patch('uuid.uuid4')
-def test_with_fixed_uuid(mock_uuid):
-    mock_uuid.return_value = UUID('12345678-1234-5678-1234-567812345678')
-    # Test code...
-```
-
-### EI Mockata
-
-❌ **Domeeni loogika** - valideerimise reeglid  
-❌ **Lihtsad arvutused** - viivise arvutamine  
-❌ **Sisemised meetodid** - oma service'i meetodid  
-
-## Git Töövoog (TDD Red-Green-Refactor)
-
-### Feature Haru Loomine
+### Create Feature Branch
 
 ```bash
 git checkout -b feature/booking-time-validation
 ```
 
-### RED Faas - Testid Kirjutatakse
+### RED Phase - Write Tests
 
 ```bash
-# Kirjuta testid mis KUKUVAD LÄBI
-# tests/unit/test_booking_validation.py
-
 git add tests/unit/test_booking_validation.py
 git commit -m "red: booking time must be within working hours and 24h ahead"
 ```
 
-### GREEN Faas - Minimaalne Kood
+### GREEN Phase - Minimal Code
 
 ```bash
-# Kirjuta minimaalne kood testide läbimiseks
-# src/services/booking_service.py
-
 git add src/services/booking_service.py
 git commit -m "green: implement booking time validation logic"
 ```
 
-### REFACTOR Faas - Koodi Puhastamine
+### REFACTOR Phase - Code Cleanup
 
 ```bash
-# Paranda koodi kvaliteeti
-# - Ekstrakti meetodid
-# - Nimede parandamine
-# - Korduste eemaldamine
-
 git add src/services/booking_service.py
 git commit -m "refactor: extract time validation to separate method"
 ```
 
-### Merge Main'i
+### Merge to Main
 
 ```bash
 git checkout main
 git merge --no-ff feature/booking-time-validation
 git push origin main
-
-# ÄRA KUSTUTA feature haru!
 ```
 
-## Testimise Parimad Praktikad
+## Testing Best Practices
 
-### AAA Muster (Arrange-Act-Assert)
+### AAA Pattern (Arrange-Act-Assert)
 
 ```python
 def test_should_allow_booking_tomorrow():
     # Arrange
     service = BookingService()
     tomorrow_10am = datetime.now() + timedelta(days=1, hours=10)
-    
+
     # Act
     result = service.validate_booking_time(tomorrow_10am)
-    
+
     # Assert
     assert result is True
 ```
 
-### Kirjeldavad Nimed
+### Mocking Strategy
 
-```python
-# ✅ HEA
-def test_should_return_available_when_in_stock_and_priced()
+✅ **Mock:** Datetime Provider, Email Service, External APIs
+❌ **Don't Mock:** Domain Logic, Simple Calculations, Internal Methods
 
-# ❌ HALB
-def test_spare_part()
-def test_1()
-```
-
-### Isoleeritud Testid
-
-```python
-# Iga test peab olema iseseisev
-# Kasuta pytest fixtures
-
-@pytest.fixture
-def clean_database():
-    # Setup
-    Base.metadata.create_all(engine)
-    yield
-    # Teardown
-    Base.metadata.drop_all(engine)
-```
-
-## Kasulikud Käsud
+## Useful Commands
 
 ```bash
-# Arendusserveri käivitamine (kui tehakse API)
-python -m src.main
+# Run tests
+pytest tests/ -v
 
-# Formateerimine
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Format code
 black src/ tests/
 
-# Linting
+# Lint code
 pylint src/
 
 # Type checking
 mypy src/
 
-# Migratsioonide kontroll
-alembic check
-
-# Testide käivitamine watch režiimis
-pytest-watch
+# Database migrations
+alembic upgrade head
+alembic downgrade -1
+alembic history
 ```
 
-## Levinud Probleemid ja Lahendused
+## Common Issues and Solutions
 
-### Probleem: Testid kukuvad läbi aja tõttu
+### Issue: Tests fail due to time
 
 ```python
-# ❌ HALB
+# ❌ BAD
 def test_booking():
-    now = datetime.now()  # Muutub iga kord!
-    
-# ✅ HEA
+    now = datetime.now()  # Changes every time!
+
+# ✅ GOOD
 @patch('src.utils.datetime_provider.DatetimeProvider.now')
 def test_booking(mock_now):
     mock_now.return_value = datetime(2025, 1, 15, 10, 0)
 ```
 
-### Probleem: Migratsioonid ei tööta
-
-```bash
-# Kontrolli alembic.ini faili
-# Kontrolli DATABASE_URL keskkonna muutujat
-# Vaata alembic/env.py konfiguratsioon
-
-alembic current  # Kontrolli praegust versiooni
-alembic history  # Vaata ajalugu
-```
-
-### Probleem: Import vead testides
+### Issue: Import errors in tests
 
 ```python
-# Kasuta absoluutseid importe
-from src.models.booking import Booking  # ✅ HEA
-from ..models.booking import Booking    # ❌ HALB
-
-# Lisa PYTHONPATH
-export PYTHONPATH="${PYTHONPATH}:${PWD}"
+# Use absolute imports
+from src.models.booking import Booking  # ✅ GOOD
+from ..models.booking import Booking    # ❌ BAD
 ```
 
-## Hindamiskriteeriumid (Kontroll)
+## References
 
-- [x] **TDD Distsipliin:** Iga funktsionaalsuse kohta on red → green → refactor
-- [ ] **Git Protsess:** Feature harud + merge commit'id + harusid ei kustutatud
-- [x] **ORM:** Korrektsed seosed, võtmed, piirangud, migratsioonid töötavad
-- [x] **Testid:** Katavad reeglid, kirjeldavad nimed, jooksevad rohelistena (27/27 ✅)
-- [x] **Mock'id:** Välistest sõltuvustest eraldamine, kell kontroll all
-- [x] **Dokumentatsioon:** README arusaadav, setup toimib
-
-## Testide Katvus
-
-```
-Name                                 Stmts   Miss  Cover
---------------------------------------------------------
-src\__init__.py                          0      0   100%
-src\database.py                         13      3    77%
-src\models\__init__.py                   4      0   100%
-src\models\base.py                       2      0   100%
-src\models\booking.py                   20      1    95%
-src\models\spare_part.py                14      1    93%
-src\services\__init__.py                 3      0   100%
-src\services\booking_service.py         48     14    71%
-src\services\spare_part_service.py      37     15    59%
-src\utils\__init__.py                    0      0   100%
-src\utils\datetime_provider.py           5      1    80%
---------------------------------------------------------
-TOTAL                                  146     35    76%
-```
-
-## Edasine Arendus
-
-Kui soovid projekti laiendada:
-
-1. Lisa SMS meeldetuletused (mock SMS gateway)
-2. Lisa teenuse hindamine (rating system)
-3. Lisa teenuste kataloog koos hindadega
-4. Lisa kasutaja autentimine (optional)
-5. Lisa REST API endpoint'id (Flask/FastAPI)
-
-## Viited
-
-- [SQLAlchemy 2.0 Dokumentatsioon](https://docs.sqlalchemy.org/)
-- [Pytest Dokumentatsioon](https://docs.pytest.org/)
+- [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/)
+- [Pytest Documentation](https://docs.pytest.org/)
 - [Alembic Tutorial](https://alembic.sqlalchemy.org/en/latest/tutorial.html)
 - [Python unittest.mock](https://docs.python.org/3/library/unittest.mock.html)
 
-## Litsents
+## License
 
-See on õppeprojekt. Vaba kasutamiseks ja modifitseerimiseks.
+This is an educational project. Free to use and modify.
 
-## Autor
+## Author
 
-[Sinu Nimi] - TAK24 testjuhitud arenduse harjutus
+[Your Name] - Test-Driven Development Exercise
 
 ---
 
-**Märkus:** See projekt demonstreerib TDD metoodikat. Fookus on protsessil (red-green-refactor) ja kvaliteedil, mitte täisfunktsionaalsel rakendusel.
-
+**Note:** This project demonstrates TDD methodology. Focus is on process (red-green-refactor) and quality, not on a fully functional application.
