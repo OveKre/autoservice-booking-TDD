@@ -26,8 +26,20 @@ class SparePartService:
         Returns:
             Availability status string
         """
-        # TODO: Implement availability check logic
-        raise NotImplementedError("Spare part availability check not yet implemented")
+        # Check if quantity is valid (must be >= 0)
+        if spare_part.quantity < 0:
+            return SparePartAvailability.OUT_OF_STOCK
+        
+        # Check if quantity is zero
+        if spare_part.quantity == 0:
+            return SparePartAvailability.OUT_OF_STOCK
+        
+        # Check if price is defined
+        if spare_part.price is None:
+            return SparePartAvailability.PRICE_UNDEFINED
+        
+        # All conditions met
+        return SparePartAvailability.AVAILABLE
 
     @staticmethod
     def get_spare_part_by_number(session: Session, part_number: str) -> SparePart:
