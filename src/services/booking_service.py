@@ -62,6 +62,8 @@ class BookingService:
         """
         Create a new booking if validation passes.
         
+        Uses database transaction to ensure atomicity.
+        
         Args:
             session: Database session
             customer_email: Customer email address
@@ -77,15 +79,19 @@ class BookingService:
         if not BookingService.validate_booking_time(booking_datetime):
             raise ValueError("Invalid booking time")
         
-        booking = Booking(
-            customer_email=customer_email,
-            service_type=service_type,
-            booking_datetime=booking_datetime,
-            status=BookingStatus.PENDING,
-        )
-        session.add(booking)
-        session.commit()
-        return booking
+        try:
+            booking = Booking(
+                customer_email=customer_email,
+                service_type=service_type,
+                booking_datetime=booking_datetime,
+                status=BookingStatus.PENDING,
+            )
+            session.add(booking)
+            session.commit()
+            return booking
+        except Exception:
+            session.rollback()
+            raise
 
     @staticmethod
     def _can_cancel_booking(booking: Booking) -> bool:
@@ -117,6 +123,8 @@ class BookingService:
         - Booking must be in CONFIRMED status
         - Cancellation must be at least 2 hours before booking time
         
+        Uses database transaction to ensure atomicity.
+        
         Args:
             session: Database session
             booking_id: ID of booking to cancel
@@ -124,22 +132,28 @@ class BookingService:
         Returns:
             True if cancelled successfully, False otherwise
         """
-        booking = session.query(Booking).filter(Booking.id == booking_id).first()
-        
-        if not booking:
-            return False
-        
-        if not BookingService._can_cancel_booking(booking):
-            return False
-        
-        booking.status = BookingStatus.CANCELLED
-        session.commit()
-        return True
+        try:
+            booking = session.query(Booking).filter(Booking.id == booking_id).first()
+            
+            if not booking:
+                return False
+            
+            if not BookingService._can_cancel_booking(booking):
+                return False
+            
+            booking.status = BookingStatus.CANCELLED
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            raise
 
     @staticmethod
     def confirm_booking(session: Session, booking_id: int) -> bool:
         """
         Confirm a pending booking.
+        
+        Uses database transaction to ensure atomicity.
         
         Args:
             session: Database session
@@ -148,15 +162,19 @@ class BookingService:
         Returns:
             True if confirmed successfully, False otherwise
         """
-        booking = session.query(Booking).filter(Booking.id == booking_id).first()
-        
-        if not booking:
-            return False
-        
-        if booking.status != BookingStatus.PENDING:
-            return False
-        
-        booking.status = BookingStatus.CONFIRMED
-        session.commit()
-        return True
+        try:
+            booking = session.query(Booking).filter(Booking.id == booking_id).first()
+            
+            if not booking:
+                return False
+            
+            if booking.status != BookingStatus.PENDING:
+                return False
+            
+            booking.status = BookingStatus.CONFIRMED
+            session.commit()
+            return True
+        except Exception:
+            session.rollback()
+            raise
 
