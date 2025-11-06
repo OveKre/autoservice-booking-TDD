@@ -7,6 +7,31 @@ from src.utils.datetime_provider import DatetimeProvider
 class BookingService:
     """Service for managing bookings with business logic."""
 
+    # Working hours constants
+    WORKING_HOUR_START = 8
+    WORKING_HOUR_END = 17
+    MIN_ADVANCE_HOURS = 24
+
+    @staticmethod
+    def _is_within_working_hours(booking_datetime: datetime) -> bool:
+        """Check if time is within working hours (8:00-17:00)."""
+        return (
+            BookingService.WORKING_HOUR_START <= booking_datetime.hour 
+            < BookingService.WORKING_HOUR_END
+        )
+
+    @staticmethod
+    def _is_weekday(booking_datetime: datetime) -> bool:
+        """Check if date is a weekday (Monday-Friday)."""
+        return booking_datetime.weekday() < 5  # Monday=0, Friday=4
+
+    @staticmethod
+    def _is_sufficient_advance_notice(booking_datetime: datetime) -> bool:
+        """Check if booking is at least 24 hours in the future."""
+        now = DatetimeProvider.now()
+        min_booking_time = now + timedelta(hours=BookingService.MIN_ADVANCE_HOURS)
+        return booking_datetime > min_booking_time
+
     @staticmethod
     def validate_booking_time(booking_datetime: datetime) -> bool:
         """
@@ -20,22 +45,11 @@ class BookingService:
         Returns:
             True if valid, False otherwise
         """
-        now = DatetimeProvider.now()
-        
-        # Check if booking is at least 24 hours in the future
-        min_booking_time = now + timedelta(hours=24)
-        if booking_datetime <= min_booking_time:
-            return False
-        
-        # Check if booking is on a weekend (Monday=0, Sunday=6)
-        if booking_datetime.weekday() >= 5:  # Saturday=5, Sunday=6
-            return False
-        
-        # Check if booking is within working hours (8:00-17:00)
-        if booking_datetime.hour < 8 or booking_datetime.hour >= 17:
-            return False
-        
-        return True
+        return (
+            BookingService._is_sufficient_advance_notice(booking_datetime)
+            and BookingService._is_weekday(booking_datetime)
+            and BookingService._is_within_working_hours(booking_datetime)
+        )
 
     @staticmethod
     def create_booking(
