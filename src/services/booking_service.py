@@ -11,6 +11,7 @@ class BookingService:
     WORKING_HOUR_START = 8
     WORKING_HOUR_END = 17
     MIN_ADVANCE_HOURS = 24
+    MIN_CANCELLATION_HOURS = 2
 
     @staticmethod
     def _is_within_working_hours(booking_datetime: datetime) -> bool:
@@ -87,6 +88,29 @@ class BookingService:
         return booking
 
     @staticmethod
+    def _can_cancel_booking(booking: Booking) -> bool:
+        """
+        Check if a booking can be cancelled based on status and time.
+        
+        Args:
+            booking: The booking to check
+            
+        Returns:
+            True if booking can be cancelled, False otherwise
+        """
+        # Must be CONFIRMED status
+        if booking.status != BookingStatus.CONFIRMED:
+            return False
+        
+        # Must have at least 2 hours before booking time
+        now = DatetimeProvider.now()
+        min_cancellation_time = booking.booking_datetime - timedelta(
+            hours=BookingService.MIN_CANCELLATION_HOURS
+        )
+        
+        return now < min_cancellation_time
+
+    @staticmethod
     def cancel_booking(session: Session, booking_id: int) -> bool:
         """
         Cancel a booking if conditions are met:
@@ -105,15 +129,7 @@ class BookingService:
         if not booking:
             return False
         
-        # Check if booking is in CONFIRMED status
-        if booking.status != BookingStatus.CONFIRMED:
-            return False
-        
-        # Check if cancellation is at least 2 hours before booking time
-        now = DatetimeProvider.now()
-        min_cancellation_time = booking.booking_datetime - timedelta(hours=2)
-        
-        if now >= min_cancellation_time:
+        if not BookingService._can_cancel_booking(booking):
             return False
         
         booking.status = BookingStatus.CANCELLED
