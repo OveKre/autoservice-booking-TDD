@@ -13,6 +13,16 @@ class SparePartService:
     """Service for managing spare parts with business logic."""
 
     @staticmethod
+    def _is_in_stock(spare_part: SparePart) -> bool:
+        """Check if spare part has positive quantity."""
+        return spare_part.quantity > 0
+
+    @staticmethod
+    def _has_price(spare_part: SparePart) -> bool:
+        """Check if spare part has a defined price."""
+        return spare_part.price is not None
+
+    @staticmethod
     def check_availability(spare_part: SparePart) -> str:
         """
         Check spare part availability according to business rules:
@@ -26,19 +36,12 @@ class SparePartService:
         Returns:
             Availability status string
         """
-        # Check if quantity is valid (must be >= 0)
-        if spare_part.quantity < 0:
+        if not SparePartService._is_in_stock(spare_part):
             return SparePartAvailability.OUT_OF_STOCK
         
-        # Check if quantity is zero
-        if spare_part.quantity == 0:
-            return SparePartAvailability.OUT_OF_STOCK
-        
-        # Check if price is defined
-        if spare_part.price is None:
+        if not SparePartService._has_price(spare_part):
             return SparePartAvailability.PRICE_UNDEFINED
         
-        # All conditions met
         return SparePartAvailability.AVAILABLE
 
     @staticmethod
