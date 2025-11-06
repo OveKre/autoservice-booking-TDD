@@ -100,8 +100,25 @@ class BookingService:
         Returns:
             True if cancelled successfully, False otherwise
         """
-        # TODO: Implement cancellation logic
-        raise NotImplementedError("Booking cancellation not yet implemented")
+        booking = session.query(Booking).filter(Booking.id == booking_id).first()
+        
+        if not booking:
+            return False
+        
+        # Check if booking is in CONFIRMED status
+        if booking.status != BookingStatus.CONFIRMED:
+            return False
+        
+        # Check if cancellation is at least 2 hours before booking time
+        now = DatetimeProvider.now()
+        min_cancellation_time = booking.booking_datetime - timedelta(hours=2)
+        
+        if now >= min_cancellation_time:
+            return False
+        
+        booking.status = BookingStatus.CANCELLED
+        session.commit()
+        return True
 
     @staticmethod
     def confirm_booking(session: Session, booking_id: int) -> bool:
