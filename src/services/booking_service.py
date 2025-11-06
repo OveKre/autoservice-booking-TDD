@@ -20,8 +20,22 @@ class BookingService:
         Returns:
             True if valid, False otherwise
         """
-        # TODO: Implement validation logic
-        raise NotImplementedError("Booking time validation not yet implemented")
+        now = DatetimeProvider.now()
+        
+        # Check if booking is at least 24 hours in the future
+        min_booking_time = now + timedelta(hours=24)
+        if booking_datetime <= min_booking_time:
+            return False
+        
+        # Check if booking is on a weekend (Monday=0, Sunday=6)
+        if booking_datetime.weekday() >= 5:  # Saturday=5, Sunday=6
+            return False
+        
+        # Check if booking is within working hours (8:00-17:00)
+        if booking_datetime.hour < 8 or booking_datetime.hour >= 17:
+            return False
+        
+        return True
 
     @staticmethod
     def create_booking(
